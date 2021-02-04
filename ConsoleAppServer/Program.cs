@@ -10,18 +10,15 @@ namespace ConsoleAppServer
     class Program
     {
         static void Main(string[] args)
-        {
-
-            ClassForRabbit rabbit = new ClassForRabbit();
-           
-            Thread myThread = new Thread(new ThreadStart(MainThread));
-            myThread.Start();
+        {        
+            Thread reconnectThread = new Thread(new ThreadStart(ReconnectThread));
+            reconnectThread.Start();
             Console.WriteLine("Для выхода нажмите хоть что-нибудь");
-            Console.ReadLine();           
-            myThread.Abort();
+            Console.ReadLine();
+            reconnectThread.Abort();
         }
 
-        public static void MainThread()
+        public static void ReconnectThread()
         {
             ClassForRabbit rabbit = new ClassForRabbit();
             //Подписка на брокер.
@@ -32,10 +29,10 @@ namespace ConsoleAppServer
                 // Каждые 10 сек проверка на подписку.
                 if (!rabbit.GetConnection())
                 {
-                    // Крутит в цикле, пока не подключимся к брокеру.
+                    // Раз в секунду пытается подключится к брокеру.
                     while (rabbit.GetConnection()) 
-                    {                       
-                        
+                    {
+                        Thread.Sleep(1000);
                     }
                     Console.WriteLine("Подключение к RabbitMQ восстановлено");
                     rabbit.DoSubscribe();
